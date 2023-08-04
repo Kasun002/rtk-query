@@ -2,12 +2,20 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export const jsonServerApi = createApi({
   reducerPath: 'jsonServerApi',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:8000/' }),
+  baseQuery: fetchBaseQuery({
+    baseUrl: 'http://localhost:8000/',
+    prepareHeaders: (headers, { getState }) => {
+      headers.set('Content-Type', 'application/json')
+      // Other than this we can set the jwt token kind of errors in this position
+      return headers;
+    }
+  }),
+
   tagTypes: ['Albums'],
   endpoints: (builder) => ({
     getAlbums: builder.query({
       query: (page = 1) => `albums?_page=${page}&_limit=10`,
-      providesTags: ['Albums'],
+      providesTags: ['Albums'], // Cashing the data inside the store
     }),
 
     createAlbum: builder.mutation({
@@ -16,7 +24,7 @@ export const jsonServerApi = createApi({
         method: 'POST',
         body: { title },
       }),
-      invalidatesTags: ['Albums'],
+      invalidatesTags: ['Albums'], // Refetching data
     }),
 
     updateAlbum: builder.mutation({
